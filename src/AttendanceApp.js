@@ -8,11 +8,17 @@ const AttendanceApp = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [users, setUsers] = useState(() => {
-  const [userLocation, setUserLocation] = useState(null);
-  const [companyLocation, setCompanyLocation] = useState({
-    lat: 37.4802, // 서울 시청 좌표 (예시 - 회사 위치로 변경 필요)
-    lng: 126.8782
-  });
+      lat: 37.4802, // 서울 시청 좌표 (예시 - 회사 위치로 변경 필요)
+      lng: 126.8782
+});
+
+const [userLocation, setUserLocation] = useState(null);
+const [companyLocation, setCompanyLocation] = useState({
+  lat: 37.4802,
+  lng: 126.8782
+});
+const [locationError, setLocationError] = useState('');
+
   const [locationError, setLocationError] = useState('');
   const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
   const [startDate, setStartDate] = useState('');
@@ -102,72 +108,7 @@ const AttendanceApp = () => {
     return distance <= ALLOWED_DISTANCE || isBusiness;
   };
 
-  // 출근 기록 처리 (수정)
-  const handleCheckIn = () => {
-  // 위치 확인
-  getUserLocation();
   
-  if (!isBusiness && userLocation && !isWithinCompanyRange()) {
-    alert('회사 위치에서만 출근 가능합니다. 출장 중이라면 출장 모드를 활성화하세요.');
-    return;
-  }
-  
-  const now = new Date();
-  const newRecord = {
-    userId: currentUser.id,
-    userName: currentUser.name,
-    date: now.toISOString().split('T')[0],
-    checkInTime: now.toTimeString().split(' ')[0],
-    checkOutTime: null,
-    status: isBusiness ? '출장' : '출근'
-  };
-  
-  // 오늘 이미 출근했는지 확인
-  const todayRecord = attendanceRecords.find(
-    record => record.userId === currentUser.id && record.date === newRecord.date
-  );
-  
-  if (todayRecord) {
-    alert('이미 오늘 출근했습니다.');
-    return;
-  }
-  
-  setAttendanceRecords([...attendanceRecords, newRecord]);
-  alert(isBusiness ? '출장 기록이 저장되었습니다!' : '출근이 기록되었습니다!');
-};
-
-// 퇴근 기록 처리 (수정)
-const handleCheckOut = () => {
-  // 위치 확인
-  getUserLocation();
-  
-  if (!isBusiness && userLocation && !isWithinCompanyRange()) {
-    alert('회사 위치에서만 퇴근 가능합니다. 출장 중이라면 출장 모드를 활성화하세요.');
-    return;
-  }
-  
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  
-  // 오늘의 출근 기록 찾기
-  const recordIndex = attendanceRecords.findIndex(
-    record => record.userId === currentUser.id && record.date === today && !record.checkOutTime
-  );
-  
-  if (recordIndex === -1) {
-    alert('오늘 출근 기록이 없습니다.');
-    return;
-  }
-  
-  const updatedRecords = [...attendanceRecords];
-  updatedRecords[recordIndex] = {
-    ...updatedRecords[recordIndex],
-    checkOutTime: now.toTimeString().split(' ')[0]
-  };
-  
-  setAttendanceRecords(updatedRecords);
-  alert(updatedRecords[recordIndex].status === '출장' ? '출장 복귀가 기록되었습니다!' : '퇴근이 기록되었습니다!');
-};
   // 로컬 스토리지에 데이터 저장
   useEffect(() => {
     localStorage.setItem('users', JSON.stringify(users));
