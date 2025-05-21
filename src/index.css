@@ -1,3 +1,43 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* 기본 스타일 */
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+.flex { display: flex; }
+.justify-center { justify-content: center; }
+.items-center { align-items: center; }
+.min-h-screen { min-height: 100vh; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.rounded { border-radius: 0.25rem; }
+.border { border: 1px solid #e2e8f0; }
+.bg-gray-100 { background-color: #f7fafc; }
+.bg-gray-800 { background-color: #2d3748; }
+.bg-white { background-color: #ffffff; }
+.text-white { color: #ffffff; }
+.text-gray-700 { color: #4a5568; }
+.w-full { width: 100%; }
+.font-bold { font-weight: 700; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+.hover\:bg-blue-600:hover { background-color: #3182ce; }
+.bg-blue-500 { background-color: #4299e1; }
+.bg-red-500 { background-color: #f56565; }
+.bg-green-500 { background-color: #48bb78; }
+.hover\:bg-red-600:hover { background-color: #e53e3e; }
+.hover\:bg-green-600:hover { background-color: #38a169; }
