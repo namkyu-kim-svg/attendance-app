@@ -14,7 +14,10 @@ const AttendanceApp = () => {
     lng: 126.8782
   });
   const [locationError, setLocationError] = useState('');
-  const [isBusiness, setIsBusiness] = useState(false); // 출장 상태    
+  const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [filteredDates, setFilteredDates] = useState([]);
   // 회사까지의 허용 거리 (미터)
   const ALLOWED_DISTANCE = 1000; // 회사로부터 1000m 이내
     // 로컬 스토리지에서 사용자 데이터 불러오기
@@ -100,7 +103,7 @@ const AttendanceApp = () => {
   };
 
   // 출근 기록 처리 (수정)
-const handleCheckIn = () => {
+  const handleCheckIn = () => {
   // 위치 확인
   getUserLocation();
   
