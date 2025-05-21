@@ -267,17 +267,20 @@ const AttendanceApp = () => {
       ]);
     });
     
-    // CSV 형식으로 변환
-    let csvContent = "data:text/csv;charset=utf-8,";
+    // CSV 형식으로 변환 (BOM 추가)
+    let csvContent = "\uFEFF"; // BOM for UTF-8
     dataToExport.forEach(row => {
-      const rowString = row.join(',');
+      // 각 필드를 큰따옴표로 묶어 쉼표 문제 해결
+      const quotedRow = row.map(field => `"${field}"`);
+      const rowString = quotedRow.join(',');
       csvContent += rowString + "\r\n";
     });
     
     // 다운로드 링크 생성 및 클릭
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `출퇴근기록_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
