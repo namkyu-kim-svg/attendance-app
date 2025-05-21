@@ -12,12 +12,14 @@ const AttendanceApp = () => {
       lng: 126.8782
 });
 
+
 const [userLocation, setUserLocation] = useState(null);
 const [companyLocation, setCompanyLocation] = useState({
-  lat: 37.4802,
-  lng: 126.8782
+  lat: 37.4802, // 서울 시청 좌표 (예시 - 회사 위치로 변경 필요)
+  lng: 126.8782,
 });
 const [locationError, setLocationError] = useState('');
+
 
   const [locationError, setLocationError] = useState('');
   const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
@@ -765,3 +767,4 @@ const [locationError, setLocationError] = useState('');
 };
 
 export default AttendanceApp;
+
