@@ -7,19 +7,33 @@ const AttendanceApp = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [users, setUsers] = useState(() => {
-      lat: 37.4802, // 서울 시청 좌표 (예시 - 회사 위치로 변경 필요)
-      lng: 126.8782
+  
+const [users, setUsers] = useState(() => {
+  const savedUsers = localStorage.getItem('users');
+  if (savedUsers) {
+    return JSON.parse(savedUsers);
+  } else {
+    return [
+      { id: 1, username: 'admin', password: 'admin123', name: '관리자', isAdmin: true }
+    ];
+  }
 });
-
 
 const [userLocation, setUserLocation] = useState(null);
 const [companyLocation, setCompanyLocation] = useState({
-  lat: 37.4802, // 서울 시청 좌표 (예시 - 회사 위치로 변경 필요)
+  lat: 37.4802,
   lng: 126.8782,
 });
 const [locationError, setLocationError] = useState('');
 
+
+
+const [userLocation, setUserLocation] = useState(null);
+const [companyLocation, setCompanyLocation] = useState({
+  lat: 37.4802,
+  lng: 126.8782
+});
+const [locationError, setLocationError] = useState('');
 
   const [locationError, setLocationError] = useState('');
   const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
