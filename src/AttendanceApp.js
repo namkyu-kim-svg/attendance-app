@@ -7,67 +7,63 @@ const AttendanceApp = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
-const [users, setUsers] = useState(() => {
-  const savedUsers = localStorage.getItem('users');
-
-const [userLocation, setUserLocation] = useState(null);
-const [companyLocation, setCompanyLocation] = useState({
-  lat: 37.4802,
-  lng: 126.8782,
-});
-const [locationError, setLocationError] = useState('');
-
-  if (savedUsers) {
-    return JSON.parse(savedUsers);
-  } else {
-    return [
-      { id: 1, username: 'admin', password: 'admin123', name: '관리자', isAdmin: true }
-    ];
-  }
-});
-
-
-
-
-
-
-
+  const [userLocation, setUserLocation] = useState(null);
+  const [companyLocation, setCompanyLocation] = useState({
+    lat: 37.4802,
+    lng: 126.8782,
+  });
   const [locationError, setLocationError] = useState('');
   const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [filteredDates, setFilteredDates] = useState([]);
+  const [currentDate] = useState(new Date().toISOString().split('T')[0]);
+
   // 회사까지의 허용 거리 (미터)
   const ALLOWED_DISTANCE = 1000; // 회사로부터 1000m 이내
-    // 로컬 스토리지에서 사용자 데이터 불러오기
+
+  const [users, setUsers] = useState(() => {
     const savedUsers = localStorage.getItem('users');
     if (savedUsers) {
       return JSON.parse(savedUsers);
     } else {
-      // 기본 관리자 계정 생성
       return [
         { id: 1, username: 'admin', password: 'admin123', name: '관리자', isAdmin: true }
       ];
     }
   });
+
   const [currentUser, setCurrentUser] = useState(null);
   const [attendanceRecords, setAttendanceRecords] = useState(() => {
-    // 로컬 스토리지에서 출석 기록 불러오기
     const savedRecords = localStorage.getItem('attendanceRecords');
     return savedRecords ? JSON.parse(savedRecords) : [];
   });
-  const [newUser, setNewUser] = useState({ username: '', password: '', name: '', isAdmin: false });
+
+  const [newUser, setNewUser] = useState({ 
+    username: '', 
+    password: '', 
+    name: '', 
+    isAdmin: false 
+  });
+
   const [currentView, setCurrentView] = useState('dashboard');
-  const [currentDate] = useState(new Date().toISOString().split('T')[0]);
-  
+
+  // 날짜별로 그룹화된 기록
+  const recordsByDate = {};
+  attendanceRecords.forEach(record => {
+    if (!recordsByDate[record.date]) {
+      recordsByDate[record.date] = [];
+    }
+    recordsByDate[record.date].push(record);
+  });
+
   // 사용자의 현재 위치 가져오기
   const getUserLocation = () => {
     if (!navigator.geolocation) {
       setLocationError('위치 정보가 지원되지 않는 브라우저입니다.');
       return;
     }
-  
+
     setLocationError('');
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -94,7 +90,7 @@ const [locationError, setLocationError] = useState('');
       }
     );
   };
-  
+
   // 두 위치 간의 거리 계산 (하버사인 공식)
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371e3; // 지구 반경 (미터)
@@ -102,14 +98,14 @@ const [locationError, setLocationError] = useState('');
     const φ2 = lat2 * Math.PI / 180;
     const Δφ = (lat2 - lat1) * Math.PI / 180;
     const Δλ = (lng2 - lng1) * Math.PI / 180;
-  
+
     const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
             Math.cos(φ1) * Math.cos(φ2) *
             Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // 미터 단위 거리
   };
-  
+
   // 위치 기반 출근 확인
   const isWithinCompanyRange = () => {
     if (!userLocation) return false;
@@ -122,7 +118,6 @@ const [locationError, setLocationError] = useState('');
     return distance <= ALLOWED_DISTANCE || isBusiness;
   };
 
-  
   // 로컬 스토리지에 데이터 저장
   useEffect(() => {
     localStorage.setItem('users', JSON.stringify(users));
@@ -154,9 +149,8 @@ const [locationError, setLocationError] = useState('');
     setCurrentView('dashboard');
   };
 
-  // 출근 기록 처리 (수정)
+  // 출근 기록 처리
   const handleCheckIn = () => {
-    // 위치 확인
     getUserLocation();
     
     if (!isBusiness && userLocation && !isWithinCompanyRange()) {
@@ -187,10 +181,9 @@ const [locationError, setLocationError] = useState('');
     setAttendanceRecords([...attendanceRecords, newRecord]);
     alert(isBusiness ? '출장 기록이 저장되었습니다!' : '출근이 기록되었습니다!');
   };
-  
-  // 퇴근 기록 처리 (수정)
+
+  // 퇴근 기록 처리
   const handleCheckOut = () => {
-    // 위치 확인
     getUserLocation();
     
     if (!isBusiness && userLocation && !isWithinCompanyRange()) {
@@ -201,7 +194,6 @@ const [locationError, setLocationError] = useState('');
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     
-    // 오늘의 출근 기록 찾기
     const recordIndex = attendanceRecords.findIndex(
       record => record.userId === currentUser.id && record.date === today && !record.checkOutTime
     );
@@ -220,6 +212,7 @@ const [locationError, setLocationError] = useState('');
     setAttendanceRecords(updatedRecords);
     alert(updatedRecords[recordIndex].status === '출장' ? '출장 복귀가 기록되었습니다!' : '퇴근이 기록되었습니다!');
   };
+
   // 새 사용자 추가
   const handleAddUser = () => {
     if (!newUser.username || !newUser.password || !newUser.name) {
@@ -227,7 +220,6 @@ const [locationError, setLocationError] = useState('');
       return;
     }
     
-    // 사용자명 중복 확인
     if (users.some(user => user.username === newUser.username)) {
       alert('이미 존재하는 사용자명입니다.');
       return;
@@ -245,7 +237,6 @@ const [locationError, setLocationError] = useState('');
   const handleDeleteUser = (userId) => {
     if (window.confirm('정말 이 사용자를 삭제하시겠습니까?')) {
       setUsers(users.filter(user => user.id !== userId));
-      // 해당 사용자의 출석 기록도 삭제
       setAttendanceRecords(attendanceRecords.filter(record => record.userId !== userId));
     }
   };
@@ -266,6 +257,70 @@ const [locationError, setLocationError] = useState('');
     setUsers(users.map(user => 
       user.id === userId ? { ...user, isAdmin: !user.isAdmin } : user
     ));
+  };
+
+  // 날짜 필터링
+  const filterByDate = () => {
+    if (!startDate && !endDate) {
+      setFilteredDates(Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a)));
+      return;
+    }
+    
+    const filtered = Object.keys(recordsByDate).filter(date => {
+      const currentDate = new Date(date);
+      const filterStart = startDate ? new Date(startDate) : new Date('1900-01-01');
+      const filterEnd = endDate ? new Date(endDate) : new Date('2100-12-31');
+      
+      return currentDate >= filterStart && currentDate <= filterEnd;
+    });
+    
+    setFilteredDates(filtered.sort((a, b) => new Date(b) - new Date(a)));
+  };
+
+  // 엑셀 다운로드
+  const downloadExcel = () => {
+    let dataToExport = [];
+    
+    dataToExport.push(['이름', '날짜', '출근 시간', '퇴근 시간', '근무 시간', '상태']);
+    
+    const sortedDates = Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a));
+    (filteredDates.length > 0 ? filteredDates : sortedDates).forEach(date => {
+      recordsByDate[date].forEach(record => {
+        let workHours = '-';
+        if (record.checkInTime && record.checkOutTime) {
+          const checkIn = new Date(`${record.date}T${record.checkInTime}`);
+          const checkOut = new Date(`${record.date}T${record.checkOutTime}`);
+          const diffMs = checkOut - checkIn;
+          const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+          const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+          workHours = `${diffHrs}시간 ${diffMins}분`;
+        }
+        
+        dataToExport.push([
+          record.userName,
+          record.date,
+          record.checkInTime || '-',
+          record.checkOutTime || '-',
+          workHours,
+          record.status || '출근'
+        ]);
+      });
+    });
+    
+    let csvContent = "\uFEFF"; // BOM for UTF-8
+    dataToExport.forEach(row => {
+      const quotedRow = row.map(field => `"${field}"`);
+      csvContent += quotedRow.join(',') + "\r\n";
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `출퇴근기록_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // 로그인 폼 렌더링
@@ -300,12 +355,12 @@ const [locationError, setLocationError] = useState('');
       </button>
     </div>
   );
-  // 대시보드 렌더링 수정
+
+  // 대시보드 렌더링
   const renderDashboard = () => (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">안녕하세요, {currentUser.name}님!</h2>
       
-      {/* 출장 모드 토글 */}
       <div className="mb-6 bg-white p-4 rounded shadow">
         <div className="flex items-center justify-between">
           <div>
@@ -324,7 +379,6 @@ const [locationError, setLocationError] = useState('');
         </div>
       </div>
       
-      {/* 위치 정보 상태 표시 */}
       <div className="mb-6 bg-white p-4 rounded shadow">
         <h3 className="text-lg font-semibold mb-2">위치 상태</h3>
         {locationError ? (
@@ -359,7 +413,6 @@ const [locationError, setLocationError] = useState('');
         </button>
       </div>
       
-      {/* 기존 출근 기록 표시 부분 */}
       <div className="mt-8">
         <h3 className="text-xl font-semibold mb-4">나의 출근 기록 (최근 5일)</h3>
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -396,82 +449,8 @@ const [locationError, setLocationError] = useState('');
         </div>
       </div>
     </div>
-  );      
-  // 상태 변수 추가 (기존 state 선언 부분에 추가)
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [filteredDates, setFilteredDates] = useState([]);
-  
-  // 날짜 필터링 함수 추가
-  const filterByDate = () => {
-    if (!startDate && !endDate) {
-      // 필터가 없으면 모든 날짜 표시
-      setFilteredDates(Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a)));
-      return;
-    }
-    
-    const filtered = Object.keys(recordsByDate).filter(date => {
-      const currentDate = new Date(date);
-      const filterStart = startDate ? new Date(startDate) : new Date('1900-01-01');
-      const filterEnd = endDate ? new Date(endDate) : new Date('2100-12-31');
-      
-      return currentDate >= filterStart && currentDate <= filterEnd;
-    });
-    
-    setFilteredDates(filtered.sort((a, b) => new Date(b) - new Date(a)));
-  };
-  
-  // 엑셀 다운로드 함수 수정 (필터링된 데이터만 내보내기)
-  const downloadExcel = () => {
-    // 현재 표시된 데이터를 가져옴
-    let dataToExport = [];
-    
-    // 헤더 추가
-    dataToExport.push(['이름', '날짜', '출근 시간', '퇴근 시간', '근무 시간', '상태']);
-    
-    // 필터링된 날짜에 해당하는 데이터만 추가
-    (filteredDates.length > 0 ? filteredDates : sortedDates).forEach(date => {
-      recordsByDate[date].forEach(record => {
-        let workHours = '-';
-        if (record.checkInTime && record.checkOutTime) {
-          const checkIn = new Date(`${record.date}T${record.checkInTime}`);
-          const checkOut = new Date(`${record.date}T${record.checkOutTime}`);
-          const diffMs = checkOut - checkIn;
-          const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-          const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-          workHours = `${diffHrs}시간 ${diffMins}분`;
-        }
-        
-        dataToExport.push([
-          record.userName,
-          record.date,
-          record.checkInTime || '-',
-          record.checkOutTime || '-',
-          workHours,
-          record.status || '출근'
-        ]);
-      });
-    });
-    
-    // CSV 형식으로 변환 (BOM 추가)
-    let csvContent = "\uFEFF"; // BOM for UTF-8
-    dataToExport.forEach(row => {
-      // 각 필드를 큰따옴표로 묶어 쉼표 문제 해결
-      const quotedRow = row.map(field => `"${field}"`);
-      const rowString = quotedRow.join(',');
-      csvContent += rowString + "\r\n";
-    });
-    
-    // 다운로드 링크 생성 및 클릭
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `출퇴근기록_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  );
+
   // 사용자 관리 페이지 렌더링
   const renderUserManagement = () => (
     <div className="p-6">
@@ -592,27 +571,13 @@ const [locationError, setLocationError] = useState('');
     </div>
   );
 
-  // 출석 보고서 렌더링 수정
+  // 출석 보고서 렌더링
   const renderAttendanceReport = () => {
-    // 날짜별로 그룹화
-    const recordsByDate = {};
-    attendanceRecords.forEach(record => {
-      if (!recordsByDate[record.date]) {
-        recordsByDate[record.date] = [];
-      }
-      recordsByDate[record.date].push(record);
-    });
-    
-    // 날짜 정렬
     const sortedDates = Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a));
     
-    // 컴포넌트 마운트 시 filteredDates 초기화
     useEffect(() => {
       setFilteredDates(sortedDates);
     }, [sortedDates.length]);
-    
-    // 표시할 날짜 목록 (필터링된 경우 필터링된 목록, 아니면 전체 목록)
-    const displayDates = filteredDates.length > 0 ? filteredDates : sortedDates;
     
     return (
       <div className="p-6">
@@ -626,7 +591,6 @@ const [locationError, setLocationError] = useState('');
           </button>
         </div>
         
-        {/* 날짜 필터 추가 */}
         <div className="mb-6 bg-white p-4 rounded shadow">
           <h3 className="text-lg font-semibold mb-4">날짜 필터</h3>
           <div className="flex flex-wrap gap-4">
@@ -677,7 +641,6 @@ const [locationError, setLocationError] = useState('');
                   </thead>
                   <tbody>
                     {recordsByDate[date].map((record, index) => {
-                      // 근무 시간 계산
                       let workHours = '-';
                       if (record.checkInTime && record.checkOutTime) {
                         const checkIn = new Date(`${record.date}T${record.checkInTime}`);
@@ -753,30 +716,30 @@ const [locationError, setLocationError] = useState('');
     </nav>
   );
 
-  // 메인 컨텐츠 렌더링
-  const renderContent = () => {
-    if (!isLoggedIn) {
-      return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-          {renderLoginForm()}
-        </div>
-      );
-    }
-
+// 메인 컨텐츠 렌더링
+const renderContent = () => {
+  if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gray-100">
-        {renderNavigation()}
-        <div className="container mx-auto py-4">
-          {currentView === 'dashboard' && renderDashboard()}
-          {currentView === 'users' && isAdmin && renderUserManagement()}
-          {currentView === 'reports' && isAdmin && renderAttendanceReport()}
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        {renderLoginForm()}
       </div>
     );
-  };
+  }
 
-  return renderContent();
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {renderNavigation()}
+      <div className="container mx-auto py-4">
+        {currentView === 'dashboard' && renderDashboard()}
+        {currentView === 'users' && isAdmin && renderUserManagement()}
+        {currentView === 'reports' && isAdmin && renderAttendanceReport()}
+      </div>
+    </div>
+  );
+};
+
+return renderContent();
 };
 
 export default AttendanceApp;
-
+                
