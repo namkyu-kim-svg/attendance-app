@@ -1,14 +1,14 @@
-import { useState, useEffect, useMemo } from 'react'; // useMemo import 추가
+import { useState, useEffect, useMemo } from 'react';
 
 const AttendanceApp = () => {
-  // 기존 상태 관리 코드는 그대로 유지
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userLocation, setUserLocation] = useState(null);
-  const [companyLocation, setCompanyLocation] = useState({
-    lat: 37.4802, // 금천구 좌표 (현재 값이 맞다면 수정할 필요 없음)
+  // setCompanyLocation을 실제로 사용하지 않는다면 useState 구조분해할당에서 제거
+  const [companyLocation] = useState({
+    lat: 37.4802,
     lng: 126.8782,
   });
   const [locationError, setLocationError] = useState('');
@@ -18,7 +18,13 @@ const AttendanceApp = () => {
   const [filteredDates, setFilteredDates] = useState([]);
   const [currentDate] = useState(new Date().toISOString().split('T')[0]);
 
-  // recordsByDate 객체 생성을 useMemo로 감싸기
+  // attendanceRecords 상태를 위로 이동
+  const [attendanceRecords, setAttendanceRecords] = useState(() => {
+    const savedRecords = localStorage.getItem('attendanceRecords');
+    return savedRecords ? JSON.parse(savedRecords) : [];
+  });
+
+  // recordsByDate는 attendanceRecords 정의 후에 사용
   const recordsByDate = useMemo(() => {
     const grouped = {};
     attendanceRecords.forEach(record => {
@@ -31,8 +37,7 @@ const AttendanceApp = () => {
     return grouped;
   }, [attendanceRecords]);
 
-  // 회사까지의 허용 거리 (미터)
-  const ALLOWED_DISTANCE = 1000; // 회사로부터 1000m 이내
+  const ALLOWED_DISTANCE = 1000;
 
   const [users, setUsers] = useState(() => {
     const savedUsers = localStorage.getItem('users');
@@ -46,11 +51,7 @@ const AttendanceApp = () => {
   });
 
   const [currentUser, setCurrentUser] = useState(null);
-  const [attendanceRecords, setAttendanceRecords] = useState(() => {
-    const savedRecords = localStorage.getItem('attendanceRecords');
-    return savedRecords ? JSON.parse(savedRecords) : [];
-  });
-
+  
   const [newUser, setNewUser] = useState({ 
     username: '', 
     password: '', 
