@@ -10,6 +10,14 @@ const AttendanceApp = () => {
   
 const [users, setUsers] = useState(() => {
   const savedUsers = localStorage.getItem('users');
+
+const [userLocation, setUserLocation] = useState(null);
+const [companyLocation, setCompanyLocation] = useState({
+  lat: 37.4802,
+  lng: 126.8782,
+});
+const [locationError, setLocationError] = useState('');
+
   if (savedUsers) {
     return JSON.parse(savedUsers);
   } else {
@@ -19,21 +27,11 @@ const [users, setUsers] = useState(() => {
   }
 });
 
-const [userLocation, setUserLocation] = useState(null);
-const [companyLocation, setCompanyLocation] = useState({
-  lat: 37.4802,
-  lng: 126.8782,
-});
-const [locationError, setLocationError] = useState('');
 
 
 
-const [userLocation, setUserLocation] = useState(null);
-const [companyLocation, setCompanyLocation] = useState({
-  lat: 37.4802,
-  lng: 126.8782
-});
-const [locationError, setLocationError] = useState('');
+
+
 
   const [locationError, setLocationError] = useState('');
   const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
