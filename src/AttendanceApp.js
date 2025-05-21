@@ -1,23 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react'; // useMemo import 추가
 
-// 메인 앱 컴포넌트
 const AttendanceApp = () => {
-  // 상태 관리
+  // 기존 상태 관리 코드는 그대로 유지
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userLocation, setUserLocation] = useState(null);
   const [companyLocation, setCompanyLocation] = useState({
-    lat: 37.4802,
+    lat: 37.4802, // 금천구 좌표 (현재 값이 맞다면 수정할 필요 없음)
     lng: 126.8782,
   });
   const [locationError, setLocationError] = useState('');
-  const [isBusiness, setIsBusiness] = useState(false); // 출장 상태
+  const [isBusiness, setIsBusiness] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [filteredDates, setFilteredDates] = useState([]);
   const [currentDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // recordsByDate 객체 생성을 useMemo로 감싸기
+  const recordsByDate = useMemo(() => {
+    const grouped = {};
+    attendanceRecords.forEach(record => {
+      const date = record.date.split('T')[0];
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(record);
+    });
+    return grouped;
+  }, [attendanceRecords]);
 
   // 회사까지의 허용 거리 (미터)
   const ALLOWED_DISTANCE = 1000; // 회사로부터 1000m 이내
@@ -47,15 +59,6 @@ const AttendanceApp = () => {
   });
 
   const [currentView, setCurrentView] = useState('dashboard');
-
-  // 날짜별로 그룹화된 기록
-  const recordsByDate = {};
-  attendanceRecords.forEach(record => {
-    if (!recordsByDate[record.date]) {
-      recordsByDate[record.date] = [];
-    }
-    recordsByDate[record.date].push(record);
-  });
 
   // 사용자의 현재 위치 가져오기
   const getUserLocation = () => {
