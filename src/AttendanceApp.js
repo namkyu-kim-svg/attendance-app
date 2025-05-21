@@ -571,13 +571,15 @@ const AttendanceApp = () => {
     </div>
   );
 
+  // useEffect를 컴포넌트 최상위 레벨로 이동
+  useEffect(() => {
+    const sortedDates = Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a));
+    setFilteredDates(sortedDates);
+  }, [recordsByDate]);
+  
   // 출석 보고서 렌더링
   const renderAttendanceReport = () => {
     const sortedDates = Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a));
-    
-    useEffect(() => {
-      setFilteredDates(sortedDates);
-    }, [sortedDates.length]);
     
     return (
       <div className="p-6">
