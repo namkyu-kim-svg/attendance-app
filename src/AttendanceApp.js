@@ -161,7 +161,7 @@ const AttendanceApp = () => {
   // 로그인 폼 렌더링
   const renderLoginForm = () => (
     <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6">로그인</h2>
+      <h2 className="text-2xl font-bold mb-6 self-start">로그인</h2>
       <div className="w-full mb-4">
         <label className="block text-gray-700 mb-2">사용자명:</label>
         <input
@@ -190,7 +190,6 @@ const AttendanceApp = () => {
       </button>
     </div>
   );
-
   // 대시보드 렌더링
   const renderDashboard = () => (
     <div className="p-6">
@@ -239,7 +238,51 @@ const AttendanceApp = () => {
       </div>
     </div>
   );
-
+  // 엑셀 다운로드 함수
+  const downloadExcel = () => {
+    // 현재 표시된 데이터를 가져옴
+    let dataToExport = [];
+    
+    // 헤더 추가
+    dataToExport.push(['이름', '날짜', '출근 시간', '퇴근 시간', '근무 시간']);
+    
+    // 데이터 추가
+    attendanceRecords.forEach(record => {
+      let workHours = '-';
+      if (record.checkInTime && record.checkOutTime) {
+        const checkIn = new Date(`${record.date}T${record.checkInTime}`);
+        const checkOut = new Date(`${record.date}T${record.checkOutTime}`);
+        const diffMs = checkOut - checkIn;
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        workHours = `${diffHrs}시간 ${diffMins}분`;
+      }
+      
+      dataToExport.push([
+        record.userName,
+        record.date,
+        record.checkInTime || '-',
+        record.checkOutTime || '-',
+        workHours
+      ]);
+    });
+    
+    // CSV 형식으로 변환
+    let csvContent = "data:text/csv;charset=utf-8,";
+    dataToExport.forEach(row => {
+      const rowString = row.join(',');
+      csvContent += rowString + "\r\n";
+    });
+    
+    // 다운로드 링크 생성 및 클릭
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `출퇴근기록_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   // 사용자 관리 페이지 렌더링
   const renderUserManagement = () => (
     <div className="p-6">
@@ -376,7 +419,16 @@ const AttendanceApp = () => {
     
     return (
       <div className="p-6">
-        <h2 className="text-2xl font-bold mb-6">출석 보고서</h2>
+        {/* 제목과 다운로드 버튼을 가로로 배치 */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">출석 보고서</h2>
+          <button
+            onClick={downloadExcel}
+            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+          >
+            엑셀 다운로드
+          </button>
+        </div>
         
         {sortedDates.length === 0 ? (
           <p className="text-gray-500">기록된 출석 데이터가 없습니다.</p>
