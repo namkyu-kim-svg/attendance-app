@@ -41,3 +41,52 @@ code {
 .bg-green-500 { background-color: #48bb78; }
 .hover\:bg-red-600:hover { background-color: #e53e3e; }
 .hover\:bg-green-600:hover { background-color: #38a169; }
+
+/* 로그인 화면 스타일 수정 */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  align-self: flex-start;
+}
+
+.login-input-group {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.login-label {
+  display: block;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.login-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+}
+
+.login-button {
+  width: 100%;
+  background-color: #4299e1;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background-color: #3182ce;
+}
